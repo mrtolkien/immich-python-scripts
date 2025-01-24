@@ -5,6 +5,9 @@ A few python scripts to manage my Immich library
 ## Run
 
 ```sh
+git clone https://github.com/mrtolkien/immich-python-scripts.git
+vi .env.example
+cp .env.example .env
 uv run immich_scripts
 ```
 
