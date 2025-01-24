@@ -1,3 +1,6 @@
+from rich.table import Table
+from textual_image.renderable import Image
+
 from immich_python_scripts import api
 
 
@@ -42,3 +45,44 @@ def get_duplicate_data(
         albums.append(asset_album_ids)
 
     return assets, albums
+
+
+def show_table(console, assets, albums):
+    table = Table(title="Duplicate Assets")
+    table.add_column("Filename")
+    table.add_column("Type")
+    table.add_column("File Size")
+    table.add_column("Resolution")
+    table.add_column("Albums Count")
+    table.add_column("Thumbnail")
+
+    largest_size = -1
+    largest_asset_index = -1
+
+    for asset, asset_album_ids in zip(assets, albums):
+        file_size = format_file_size(
+            asset.exifInfo.fileSizeInByte if asset.exifInfo else 0
+        )
+
+        resolution = (
+            f"{asset.exifInfo.exifImageWidth}x{asset.exifInfo.exifImageHeight}"
+            if asset.exifInfo
+            else "Unknown"
+        )
+
+        if asset.exifInfo and (asset.exifInfo.fileSizeInByte or -1) > largest_size:
+            largest_size = asset.exifInfo.fileSizeInByte or -1
+            largest_asset_index = len(table.rows)
+
+        table.add_row(
+            asset.originalFileName + "\n" + asset.id,
+            asset.originalMimeType,
+            file_size,
+            resolution,
+            str(len(asset_album_ids)),
+            Image(api.queries.get_thumbnail(asset.id)),
+        )
+
+    # Display the table
+    console.print(table)
+    return largest_asset_index

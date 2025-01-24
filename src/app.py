@@ -17,15 +17,18 @@ Simply manage your Immich duplicates.
 ## Features
 
 ### Duplicate Management
+
+Feature:
+- Merge album memberships
+- Move others to trash
+
+Option:
 - **Step by Step Review**: Review and merge duplicates one by one
   - Compare metadata and thumbnails
   - Pick which file to keep
-  - Merge album memberships
-  - Move others to trash
 - **Automatic Merge**: Automatically merge duplicates
   - Keeps the highest quality version
-  - Merges album memberships
-  - Moves others to trash
+  - Asks if unsure
 
 ---
 """)
@@ -50,7 +53,7 @@ def main():
             duplicates.step_by_step_handler()
 
         case "Automatically merge duplicates":
-            print("Automatically merging duplicates with album merging")
+            duplicates.automated_handler()
 
         case "Exit":
             print("Exiting")

@@ -9,18 +9,17 @@ from immich_python_scripts.duplicates.common import (
     show_table,
 )
 
-from .. import api
+from .. import api, settings
 
 
-def step_by_step_handler():
+def automated_handler():
     console = Console()
     console.print(
         Markdown("""
-# Step by Step Duplicate Handling
+# Semi-Automated Duplicate Management
 
-- For each duplicate group, you get shown the exif data
-- The asset picked will be kept, all others will be trashed
-- The asset will be added to all albums the other assets were in
+- If all assets have the same type, pick the biggest one
+- If assets have different types, ask the user
 
 ---
 
@@ -41,6 +40,33 @@ def handle_duplicate_group(console, duplicate):
 
     # Create a table to display duplicate assets
     largest_asset_index = show_table(console, assets, albums)
+
+    types = set(a.originalMimeType for a in assets)
+
+    if len(types) == 1:
+        print("All assets have the same type, pick the largest one")
+        return pick_asset(assets, albums, largest_asset_index)
+
+    elif types == {"image/jpeg", "image/heic"} and settings.pick_heic:
+        print("Picking HEIC file over JPG file")
+
+        # Pick the biggest HEIC file
+        largest_asset_index = -1
+        largest_asset_size = 0
+
+        for idx, asset in enumerate(assets):
+            if asset.originalMimeType != "image/heic":
+                continue
+
+            if (
+                asset.exifInfo
+                and (asset.exifInfo.fileSizeInByte or -1) > largest_asset_size
+            ):
+                largest_asset_index = idx
+                largest_asset_size = asset.exifInfo.fileSizeInByte or -1
+
+        if largest_asset_index != -1:
+            return pick_asset(assets, albums, largest_asset_index)
 
     # Select asset to keep
     choices = [
