@@ -1,0 +1,25 @@
+[project]
+name = "immich-python-scripts"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12.1"
+dependencies = [
+    "pydantic-settings>=2.7.1",
+    "requests>=2.32.3",
+    "textual>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "datamodel-code-generator[http]>=0.26.5",
+    "pytest>=8.3.4",
+    "textual-dev>=1.7.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+immich_scripts = "src.app:main"
