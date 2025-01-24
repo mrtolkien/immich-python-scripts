@@ -1,5 +1,8 @@
 from typing import Type, TypeVar
 
+import PIL
+import PIL.IcnsImagePlugin
+import PIL.Image
 import pydantic
 import requests
 
@@ -51,3 +54,39 @@ def trash_assets(asset_ids: list[str]) -> None:
     )
 
     response.raise_for_status()
+
+
+def get_asset(asset_id: str) -> model.AssetResponseDto:
+    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
+
+    response = requests.get(
+        f"{settings.server_url}/api/assets/{asset_id}",
+        headers=headers,
+        data={},
+        params={},
+    )
+
+    response.raise_for_status()
+
+    return model.AssetResponseDto.model_validate(response.json())
+
+
+def get_thumbnail(asset_id: str) -> PIL.Image.Image:
+    headers = {
+        "Accept": "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
+        "x-api-key": settings.api_key,
+    }
+
+    response = requests.get(
+        f"{settings.server_url}/api/assets/{asset_id}/thumbnail",
+        headers=headers,
+        data={},
+        params={},
+        stream=True,
+    )
+
+    response.raise_for_status()
+
+    response.raw.decode_content = True  # handle spurious Content-Encoding
+
+    return PIL.Image.open(response.raw)  # type: ignore

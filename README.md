@@ -10,6 +10,7 @@ uv run immich_scripts
 
 ## TODO
 
+- [ ] Drop textualize for a simpler approach
 - [ ] Logging
 - [ ] Automated full image deduplication with a few rules
 - [ ] Image display

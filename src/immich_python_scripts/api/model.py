@@ -1546,7 +1546,7 @@ class PeopleUpdateDto(BaseModel):
 
 
 class PersonWithFacesResponseDto(BaseModel):
-    birthDate: date
+    birthDate: date | None
     faces: List[AssetFaceWithoutPersonResponseDto]
     id: str
     isHidden: bool
