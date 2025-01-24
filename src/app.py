@@ -1,14 +1,18 @@
 from textual.app import App
 from textual.containers import Container
-from textual.widgets import DataTable, Footer, Header, OptionList
+from textual.widgets import DataTable, Footer, Header, Log, OptionList
 from textual.widgets.option_list import Option, Separator
 
-import immich_python_scripts.duplicates
+from immich_python_scripts.duplicates import DuplicatesHandler
 
 
 class ImmichApp(App):
     BINDINGS = [("q", "quit", "Quit")]
     CSS_PATH = "app.css"
+
+    def __init__(self):
+        super().__init__()
+        self.duplicates_handler = None
 
     def compose(self):
         yield Header(show_clock=True, name="Immich")
@@ -38,15 +42,17 @@ class ImmichApp(App):
 
         if event.option.id == "duplicates":
             self.title = "Duplicates removal"
-            self.sub_title = "The selected asset gets added to albums"
-            immich_python_scripts.duplicates.run(self.query_one(DataTable))
+            self.sub_title = "The selected asset gets added to all albums"
+            self.duplicates_handler = DuplicatesHandler()
+            self.duplicates_handler.load_next(self.query_one(DataTable))
 
         elif event.option.id == "exit":
             self.exit()
 
     def on_data_table_row_selected(self, event):
-        print(event.row_key)
-        self.exit()
+        if self.duplicates_handler:
+            self.duplicates_handler.handle_selection(event.row_key)
+            self.duplicates_handler.load_next(self.query_one(DataTable))
 
 
 def main():

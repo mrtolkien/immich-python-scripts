@@ -1,3 +1,3 @@
-from .run import run_duplicates as run
+from .widget import DuplicatesHandler
 
-__all__ = ["run"]
+__all__ = ["DuplicatesHandler"]

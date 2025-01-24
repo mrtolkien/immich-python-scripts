@@ -1,21 +1,26 @@
-from textual.widget import Widget
 from textual.widgets import DataTable
 
 from .. import api
 
 
-def run_duplicates(table: DataTable):
-    duplicates = api.queries.get_duplicates()
+class DuplicatesHandler:
+    def __init__(self):
+        self.duplicates = api.queries.get_duplicates()
+        self.current_index = 0
+        self.current_albums = set()
 
-    table.add_columns("Filename", "Size", "Resolution", "Albums")
+    def load_next(self, table: DataTable):
+        if self.current_index >= len(self.duplicates):
+            table.clear()
+            return False
 
-    for duplicate_assets in duplicates:
+        duplicate_assets = self.duplicates[self.current_index]
         table.clear()
-        albums = set()
+        self.current_albums = set()
 
         for asset in duplicate_assets.assets:
             asset_album_ids = [a.id for a in api.queries.get_albums(asset.id)]
-            albums.update(asset_album_ids)
+            self.current_albums.update(asset_album_ids)
 
             if asset.exifInfo is None:
                 file_size = "N/A"
@@ -23,6 +28,9 @@ def run_duplicates(table: DataTable):
             else:
                 file_size = format_file_size(asset.exifInfo.fileSizeInByte)
                 resolution = f"{int(asset.exifInfo.exifImageWidth or 0)}x{int(asset.exifInfo.exifImageHeight or 0 )}"
+
+            if not table.columns:
+                table.add_columns("Filename", "Size", "Resolution", "Albums")
 
             table.add_row(
                 asset.originalFileName,
@@ -32,7 +40,12 @@ def run_duplicates(table: DataTable):
                 key=asset.id,
             )
 
-        break
+        return True
+
+    def handle_selection(self, asset_id):
+        # albums = self.current_albums
+
+        self.current_index += 1
 
 
 def format_file_size(size_in_bytes):
