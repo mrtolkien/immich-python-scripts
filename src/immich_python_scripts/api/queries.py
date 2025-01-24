@@ -25,5 +25,29 @@ def get_duplicates() -> list[model.DuplicateResponseDto]:
     return get("duplicates", model.DuplicateResponseDto)
 
 
-def get_albums(photo_id: str) -> list[model.AlbumResponseDto]:
-    return get("albums", model.AlbumResponseDto, params={"assetId": photo_id})
+def get_albums(asset_id: str) -> list[model.AlbumResponseDto]:
+    return get("albums", model.AlbumResponseDto, params={"assetId": asset_id})
+
+
+def add_asset_to_album(asset_id: str, album_id: str) -> None:
+    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
+
+    response = requests.put(
+        f"{settings.server_url}/api/albums/{album_id}/assets",
+        headers=headers,
+        json={"ids": [asset_id]},
+    )
+
+    response.raise_for_status()
+
+
+def trash_assets(asset_ids: list[str]) -> None:
+    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
+
+    response = requests.delete(
+        f"{settings.server_url}/api/assets",
+        headers=headers,
+        json={"ids": asset_ids, "force": True},
+    )
+
+    response.raise_for_status()

@@ -6,8 +6,10 @@ from .. import api
 class DuplicatesHandler:
     def __init__(self):
         self.duplicates = api.queries.get_duplicates()
+
         self.current_index = 0
-        self.current_albums = set()
+
+        self.current_assets_albums = {}
 
     def load_next(self, table: DataTable):
         if self.current_index >= len(self.duplicates):
@@ -16,14 +18,13 @@ class DuplicatesHandler:
 
         duplicate_assets = self.duplicates[self.current_index]
         table.clear()
-        self.current_albums = set()
 
         largest_asset_id = 0
         largest_size = -1
 
         for idx, asset in enumerate(duplicate_assets.assets):
             asset_album_ids = [a.id for a in api.queries.get_albums(asset.id)]
-            self.current_albums.update(asset_album_ids)
+            self.current_assets_albums[asset.id] = asset_album_ids
 
             if asset.exifInfo is None:
                 file_size = "N/A"
@@ -51,9 +52,21 @@ class DuplicatesHandler:
 
         table.move_cursor(row=largest_asset_id)
 
-    def handle_selection(self, asset_id):
-        # albums = self.current_albums
+    def handle_selection(self, asset_row):
+        asset_id = asset_row.value
 
+        for a in self.current_assets_albums:
+            if a == asset_id:
+                continue
+
+            for album_id in self.current_assets_albums[a]:
+                api.queries.add_asset_to_album(asset_id, album_id)
+
+        api.queries.trash_assets(
+            [a for a in self.current_assets_albums if a != asset_id]
+        )
+
+        self.current_assets_albums = {}
         self.current_index += 1
 
 

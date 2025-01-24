@@ -1,6 +1,6 @@
 from textual.app import App
 from textual.containers import Container
-from textual.widgets import DataTable, Footer, Header, Log, OptionList
+from textual.widgets import DataTable, Footer, Header, OptionList
 from textual.widgets.option_list import Option, Separator
 
 from immich_python_scripts.duplicates import DuplicatesHandler
@@ -44,6 +44,7 @@ class ImmichApp(App):
             self.title = "Duplicates removal"
             self.sub_title = "The selected asset gets added to all albums"
             self.duplicates_handler = DuplicatesHandler()
+            # TODO Loading state with async/await
             self.duplicates_handler.load_next(self.query_one(DataTable))
 
         elif event.option.id == "exit":
