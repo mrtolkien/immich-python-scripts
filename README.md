@@ -8,10 +8,14 @@ A few python scripts to manage my Immich library
 uv run immich_scripts
 ```
 
+## Demo
+
+![Duplicate picker](image.png)
+
 ## TODO
 
-- [ ] Drop textualize for a simpler approach
+- [x] Drop textualize for a simpler approach
 - [ ] Logging
 - [ ] Automated full image deduplication with a few rules
-- [ ] Image display
+- [x] Image display
 - [ ] Video deduplication

@@ -46,10 +46,10 @@ def main():
     ).ask()
 
     match response:
-        case "Review duplicates one by one with album merging":
+        case "Review duplicates one by one":
             duplicates.step_by_step_handler()
 
-        case "Automatically merge duplicates with album merging":
+        case "Automatically merge duplicates":
             print("Automatically merging duplicates with album merging")
 
         case "Exit":
