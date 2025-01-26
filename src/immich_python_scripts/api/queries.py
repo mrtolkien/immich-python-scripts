@@ -11,67 +11,108 @@ from . import model
 
 T = TypeVar("T", bound=pydantic.BaseModel)
 
+HEADERS = {"Accept": "application/json", "x-api-key": settings.api_key}
 
-def get(path: str, _model: Type[T], params: dict | None = None) -> list[T]:
-    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
 
-    response = requests.get(
-        f"{settings.server_url}/api/{path}", headers=headers, data={}, params=params
+def query_api_raw(
+    verb: str,
+    path: str,
+    params: dict | None = None,
+    body: dict | None = None,
+) -> requests.Response:
+    response = requests.request(
+        verb,
+        f"{settings.server_url}/api/{path}",
+        headers=HEADERS,
+        json=body or {},
+        params=params or {},
     )
 
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print(e)
+        print(response.text)
+        raise e
+
+    return response
+
+
+def query_api_list(
+    verb: str,
+    path: str,
+    _model: Type[T],
+    params: dict | None = None,
+    body: dict | None = None,
+) -> list[T]:
+    response = query_api_raw(verb, path, params, body)
+
+    if _model is None:
+        return response.json()
 
     return [_model.model_validate(item) for item in response.json()]
 
 
+def query_api_single(
+    verb: str,
+    path: str,
+    _model: Type[T],
+    params: dict | None = None,
+    body: dict | None = None,
+) -> T:
+    response = query_api_raw(verb, path, params, body)
+
+    return _model.model_validate(response.json())
+
+
 def get_duplicates() -> list[model.DuplicateResponseDto]:
-    return get("duplicates", model.DuplicateResponseDto)
+    return query_api_list("GET", "duplicates", model.DuplicateResponseDto)
 
 
 def get_albums(asset_id: str) -> list[model.AlbumResponseDto]:
-    return get("albums", model.AlbumResponseDto, params={"assetId": asset_id})
+    return query_api_list(
+        "GET", "albums", model.AlbumResponseDto, params={"assetId": asset_id}
+    )
 
 
 def add_asset_to_album(asset_id: str, album_id: str) -> None:
-    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
-
-    response = requests.put(
-        f"{settings.server_url}/api/albums/{album_id}/assets",
-        headers=headers,
-        json={"ids": [asset_id]},
-    )
-
-    response.raise_for_status()
+    query_api_raw("PUT", f"/albums/{album_id}/assets", body={"ids": [asset_id]})
 
 
 def trash_assets(asset_ids: list[str]) -> None:
-    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
-
-    response = requests.delete(
-        f"{settings.server_url}/api/assets",
-        headers=headers,
-        json={"ids": asset_ids, "force": True},
-    )
-
-    response.raise_for_status()
+    print(f"Trashing assets {asset_ids}")
+    query_api_raw("DELETE", "assets", body={"ids": asset_ids})
 
 
 def get_asset(asset_id: str) -> model.AssetResponseDto:
-    headers = {"Accept": "application/json", "x-api-key": settings.api_key}
+    return query_api_single("GET", f"assets/{asset_id}", model.AssetResponseDto)
 
-    response = requests.get(
-        f"{settings.server_url}/api/assets/{asset_id}",
-        headers=headers,
-        data={},
-        params={},
+
+def get_all_videos() -> list[model.AssetResponseDto]:
+    search = query_api_single(
+        "POST",
+        "search/metadata",
+        model.SearchResponseDto,
+        body={"type": "VIDEO", "withExif": "true"},
     )
 
-    response.raise_for_status()
+    videos = search.assets.items
 
-    return model.AssetResponseDto.model_validate(response.json())
+    while search.assets.nextPage:
+        search = query_api_single(
+            "POST",
+            "search/metadata",
+            model.SearchResponseDto,
+            body={"type": "VIDEO", "withExif": "true"}
+            | {"page": search.assets.nextPage},
+        )
+
+        videos += search.assets.items
+
+    return videos
 
 
-def get_thumbnail(asset_id: str) -> PIL.Image.Image:
+def get_thumbnail(asset_id: str) -> PIL.Image.Image | None:
     headers = {
         "Accept": "image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
         "x-api-key": settings.api_key,
@@ -85,7 +126,10 @@ def get_thumbnail(asset_id: str) -> PIL.Image.Image:
         stream=True,
     )
 
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        return None
 
     response.raw.decode_content = True  # handle spurious Content-Encoding
 

@@ -1730,7 +1730,7 @@ class AssetResponseDto(BaseModel):
     )
     stack: Optional[AssetStackResponseDto] = None
     tags: Optional[List[TagResponseDto]] = None
-    thumbhash: str
+    thumbhash: str | None
     type: AssetTypeEnum
     unassignedFaces: Optional[List[AssetFaceWithoutPersonResponseDto]] = None
     updatedAt: datetime
@@ -1773,7 +1773,7 @@ class SearchAssetResponseDto(BaseModel):
     count: int
     facets: List[SearchFacetResponseDto]
     items: List[AssetResponseDto]
-    nextPage: str
+    nextPage: str | None
     total: int
 
 

@@ -31,15 +31,17 @@ Getting duplicates from server...
 
     duplicates = api.queries.get_duplicates()
 
+    print(f"Found {len(duplicates)} duplicate groups")
+
     for duplicate in duplicates:
-        handle_duplicate_group(console, duplicate)
+        handle_duplicate_group(duplicate)
 
 
-def handle_duplicate_group(console, duplicate):
+def handle_duplicate_group(duplicate):
     assets, albums = get_duplicate_data(duplicate)
 
     # Create a table to display duplicate assets
-    largest_asset_index = show_table(console, assets, albums)
+    largest_asset_index = show_table(assets, albums)
 
     types = set(a.originalMimeType for a in assets)
 

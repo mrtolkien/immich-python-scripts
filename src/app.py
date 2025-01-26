@@ -16,19 +16,20 @@ Simply manage your Immich duplicates.
 
 ## Features
 
-### Duplicate Management
+### Duplicate Photos Management
 
-Feature:
-- Merge album memberships
-- Move others to trash
+- Merges album memberships
+- Move low-quality duplicates to trash
 
-Option:
+Two options:
 - **Step by Step Review**: Review and merge duplicates one by one
-  - Compare metadata and thumbnails
-  - Pick which file to keep
-- **Automatic Merge**: Automatically merge duplicates
-  - Keeps the highest quality version
+- **Automatic Merge**: Automatically merge duplicates based on heuristics
   - Asks if unsure
+
+### Duplicate Videos Management
+                 
+- Shows files with the same name with their exif data
+- Prompts to delete the duplicates
 
 ---
 """)
@@ -44,6 +45,7 @@ def main():
         choices=[
             "Review duplicates one by one",
             "Automatically merge duplicates",
+            "Review videos with the same name",
             "Exit",
         ],
     ).ask()
@@ -54,6 +56,9 @@ def main():
 
         case "Automatically merge duplicates":
             duplicates.automated_handler()
+
+        case "Review videos with the same name":
+            duplicates.dedup_videos()
 
         case "Exit":
             print("Exiting")
