@@ -76,7 +76,7 @@ def get_albums(asset_id: str) -> list[model.AlbumResponseDto]:
 
 
 def add_asset_to_album(asset_id: str, album_id: str) -> None:
-    query_api_raw("PUT", f"/albums/{album_id}/assets", body={"ids": [asset_id]})
+    query_api_raw("PUT", f"albums/{album_id}/assets", body={"ids": [asset_id]})
 
 
 def trash_assets(asset_ids: list[str]) -> None:

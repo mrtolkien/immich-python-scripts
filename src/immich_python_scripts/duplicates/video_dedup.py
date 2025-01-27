@@ -45,4 +45,24 @@ Getting videos from server...
         ).ask()
 
         if videos_to_delete:
+            if len(same_name_videos) == 2 and len(videos_to_delete) == 1:
+                # If exactly one of two videos is being deleted, transfer its albums
+                deleted_video = next(
+                    v for v in same_name_videos if v.id in videos_to_delete
+                )
+                kept_video = next(
+                    v for v in same_name_videos if v.id not in videos_to_delete
+                )
+
+                deleted_albums = api.queries.get_albums(deleted_video.id)
+                kept_albums = api.queries.get_albums(kept_video.id)
+
+                # Add kept video to all albums of the deleted video
+                for album in deleted_albums:
+                    if album.id not in [a.id for a in kept_albums]:
+                        print(
+                            f"Adding {kept_video.originalFileName} to album {album.albumName}"
+                        )
+                        api.queries.add_asset_to_album(kept_video.id, album.id)
+
             api.queries.trash_assets(videos_to_delete)

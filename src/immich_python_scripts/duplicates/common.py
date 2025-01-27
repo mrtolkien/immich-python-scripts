@@ -61,7 +61,7 @@ def show_table(assets, albums):
         )
 
         resolution = (
-            f"{int( asset.exifInfo.exifImageWidth )}x{int( asset.exifInfo.exifImageHeight )}"
+            f"{asset.exifInfo.exifImageWidth}x{asset.exifInfo.exifImageHeight}"
             if asset.exifInfo
             else "Unknown"
         )
@@ -104,7 +104,7 @@ def show_video_table(assets: list[api.model.AssetResponseDto]):
         )
 
         resolution = (
-            f"{int( asset.exifInfo.exifImageWidth )}x{int( asset.exifInfo.exifImageHeight )}"  # type: ignore
+            f"{asset.exifInfo.exifImageWidth}x{asset.exifInfo.exifImageHeight}"
             if asset.exifInfo
             else "Unknown"
         )
