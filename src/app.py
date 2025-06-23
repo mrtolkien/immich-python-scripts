@@ -4,7 +4,7 @@ import questionary
 from rich.console import Console
 from rich.markdown import Markdown
 
-from immich_python_scripts import duplicates
+from immich_python_scripts import duplicates, favorites
 
 
 def show_presentation():
@@ -31,6 +31,12 @@ Two options:
 - Shows files with the same name with their exif data
 - Prompts to delete the duplicates
 
+### Favorites Download
+
+- Downloads all your favorite pictures to a local folder
+- Organizes files with original names
+- Shows progress during download
+
 ---
 """)
     )
@@ -46,6 +52,7 @@ def main():
             "Review duplicates one by one",
             "Automatically merge duplicates",
             "Review videos with the same name",
+            "Download favorite pictures",
             "Exit",
         ],
     ).ask()
@@ -59,6 +66,9 @@ def main():
 
         case "Review videos with the same name":
             duplicates.dedup_videos()
+
+        case "Download favorite pictures":
+            favorites.download_favorites_handler()
 
         case "Exit":
             print("Exiting")
